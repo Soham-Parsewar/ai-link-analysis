@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     PORT: int = 4000
 
     # LLM Settings
-    LLM_PROVIDER: Literal["openai", "gemini", "mock"] = "openai"
+    # Default is 'mock' for built-in grounded heuristic engine without requiring external API keys.
+    LLM_PROVIDER: Literal["mock", "openai", "gemini"] = "mock"
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "gpt-4o-mini"
     LLM_MAX_RETRIES: int = 2

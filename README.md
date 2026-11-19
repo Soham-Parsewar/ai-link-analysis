@@ -548,6 +548,8 @@ flowchart TD
 - Python 3.11+
 - Git
 
+> **Zero API Key Requirement**: This project runs out of the box with `LLM_PROVIDER="mock"`. You **do not** need an OpenAI or Gemini API key to run the server, execute tests, inspect Swagger docs, or analyze real websites.
+
 ### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/<your-username>/ai-link-analysis.git
@@ -571,22 +573,17 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Step 4: Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` according to your preferred LLM provider:
+### Step 4: Environment Configuration (`.env`)
+By default, the `.env` file is pre-configured to use the built-in **Grounded Heuristic Fallback Engine**:
 ```env
 APP_NAME="AI Website Link Analysis API"
 APP_ENV="development"
 HOST="0.0.0.0"
 PORT=4000
 
-# Choose your provider: 'openai', 'gemini', or 'mock'
-LLM_PROVIDER="openai"
-LLM_API_KEY="sk-proj-your-openai-api-key"
+# Default: Built-in Grounded Heuristic Engine (NO API KEY REQUIRED)
+LLM_PROVIDER="mock"
+LLM_API_KEY=""
 LLM_MODEL="gpt-4o-mini"
 
 # Website Extraction & Security Limits
@@ -599,7 +596,21 @@ CACHE_ENABLED=true
 CACHE_TTL_SECONDS=3600
 ```
 
-> **Note**: If `LLM_API_KEY` is not provided, the API automatically falls back to the high-fidelity **Grounded Heuristic Engine**. This enables instant evaluation and testing of real websites without requiring external API credits.
+### How to Switch to Real LLM (When Ready)
+Whenever you want to switch to a live LLM provider, update `.env`:
+1. **For OpenAI**:
+   ```env
+   LLM_PROVIDER="openai"
+   LLM_API_KEY="sk-proj-your-openai-api-key"
+   LLM_MODEL="gpt-4o-mini"
+   ```
+2. **For Google Gemini**:
+   ```env
+   LLM_PROVIDER="gemini"
+   LLM_API_KEY="AIzaSy-your-gemini-api-key"
+   LLM_MODEL="gemini-1.5-flash"
+   ```
+If `LLM_API_KEY` is left blank, the API safely falls back to `mock` mode automatically without crashing.
 
 ---
 

@@ -67,8 +67,35 @@ class AnalysisService:
         # Step 3: LLM Analysis
         brand_info, analysis_content = await self.llm_provider.generate_analysis(website_data)
 
+        is_fallback = (
+            self.settings.LLM_PROVIDER == "mock"
+            or not self.settings.LLM_API_KEY
+            or self.settings.LLM_API_KEY.strip() == ""
+        )
+
+        actual_provider = (
+            "mock (heuristic_fallback)"
+            if is_fallback
+            else self.settings.LLM_PROVIDER
+        )
+        actual_model = (
+            "grounded-heuristic-v1"
+            if is_fallback
+            else self.settings.LLM_MODEL
+        )
+        analysis_source = (
+            "website_content_and_heuristic_fallback"
+            if is_fallback
+            else "website_content_and_ai"
+        )
+
         # Assemble Warnings
         warnings: list[str] = []
+        if is_fallback:
+            warnings.append(
+                "Running in heuristic fallback mode (no external LLM API key configured). "
+                "Analysis generated via built-in grounded heuristic engine."
+            )
         if website_data.content_truncated:
             warnings.append(
                 f"Website content exceeded {self.settings.MAX_CONTENT_LENGTH} characters and was truncated for processing."
@@ -80,25 +107,13 @@ class AnalysisService:
 
         execution_duration = round(time.time() - start_time, 3)
 
-        # Provider identifier
-        actual_provider = (
-            "mock (grounded_engine)"
-            if not self.settings.LLM_API_KEY
-            else self.settings.LLM_PROVIDER
-        )
-        actual_model = (
-            "grounded-heuristic-v1"
-            if not self.settings.LLM_API_KEY
-            else self.settings.LLM_MODEL
-        )
-
         metadata = AnalysisMetadata(
             analysis_timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             llm_provider=actual_provider,
             llm_model=actual_model,
             content_truncated=website_data.content_truncated,
             raw_content_chars=website_data.raw_content_length,
-            analysis_source="website_content_and_ai",
+            analysis_source=analysis_source,
             warnings=warnings,
             cached=False,
             execution_time_seconds=execution_duration,
